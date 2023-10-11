@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -58,19 +59,36 @@ public class TickerListFragment extends Fragment {
 
                 webViewModel.setCurrentUrl(selectedTicker);
 
-                InfoWebFragment infoWebFragment = new InfoWebFragment();
-                Bundle args = new Bundle();
-                args.putString("ticker", selectedTicker);
-                infoWebFragment.setArguments(args);
+                webViewModel.getTickerList().observe(getViewLifecycleOwner(), new Observer<List<String>>() {
+                    @Override
+                    public void onChanged(List<String> list) {
+                        if (list != null) {
+                            ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, list);
+                            listView.setAdapter(adapter);
+                        }
+                    }
+                });
 
-                requireActivity().getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(android.R.id.content, infoWebFragment)
-                        .addToBackStack(null)
-                        .commit();
+                webViewModel.setCurrentUrl("https://seekingalpha.com/symbol/" + selectedTicker);
             }
         });
 
         return view;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        webViewModel = new ViewModelProvider(requireActivity()).get(WebViewModel.class);
+        webViewModel.getTickerList().observe(getViewLifecycleOwner(), new Observer<List<String>>() {
+            @Override
+            public void onChanged(List<String> list) {
+                if (list != null) {
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, list);
+                    listView.setAdapter(adapter);
+                }
+            }
+        });
     }
 }

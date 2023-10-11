@@ -9,6 +9,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
 
     private WebViewModel webViewModel;
     private static final int SMS_PERMISSION_CODE = 101;
+    private String ticker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,13 +42,15 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.RECEIVE_SMS }, SMS_PERMISSION_CODE);
         }
 
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            if (getSupportFragmentManager().findFragmentById(R.id.ticker_list_fragment) == null) {
-                getSupportFragmentManager().beginTransaction()
-                        .add(R.id.ticker_list_fragment, new TickerListFragment())
-                        .add(R.id.info_web_fragment, new InfoWebFragment())
-                        .commit();
-            }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (intent.getAction() != null && intent.getAction().equals(Intent.ACTION_SEND)) {
+            String smsText = intent.getExtras().getString("smsText");
+            
+            webViewModel.addTicker(ticker);
         }
     }
 
