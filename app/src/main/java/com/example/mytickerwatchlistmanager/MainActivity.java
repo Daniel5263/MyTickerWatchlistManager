@@ -30,11 +30,12 @@ public class MainActivity extends AppCompatActivity {
         webViewModel = new ViewModelProvider(this).get(WebViewModel.class);
 
         if (savedInstanceState == null) {
-            TickerListFragment tickerListFragment = new TickerListFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.ticker_list_container, new TickerListFragment())
+                    .commit();
 
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .add(android.R.id.content, tickerListFragment)
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.info_web_container, new InfoWebFragment())
                     .commit();
         }
 
@@ -49,9 +50,20 @@ public class MainActivity extends AppCompatActivity {
         super.onNewIntent(intent);
         if (intent.getAction() != null && intent.getAction().equals(Intent.ACTION_SEND)) {
             String smsText = intent.getExtras().getString("smsText");
-            
+
+            if (smsText != null) {
+                ticker = extractTickerFromSmsText(smsText);
+                if (ticker != null) {
+                    webViewModel.addTicker(ticker);
+                }
+            }
+
             webViewModel.addTicker(ticker);
         }
+    }
+
+    private String extractTickerFromSmsText(String smsText) {
+        return ticker;
     }
 
     @Override

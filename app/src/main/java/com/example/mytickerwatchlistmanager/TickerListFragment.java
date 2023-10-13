@@ -48,7 +48,7 @@ public class TickerListFragment extends Fragment {
 
         String[] tickers = {"BAC", "AAPL", "DIS"};
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, tickers);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, tickers);
 
         listView.setAdapter(adapter);
 
@@ -58,16 +58,6 @@ public class TickerListFragment extends Fragment {
                 String selectedTicker = tickers[position];
 
                 webViewModel.setCurrentUrl(selectedTicker);
-
-                webViewModel.getTickerList().observe(getViewLifecycleOwner(), new Observer<List<String>>() {
-                    @Override
-                    public void onChanged(List<String> list) {
-                        if (list != null) {
-                            ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, list);
-                            listView.setAdapter(adapter);
-                        }
-                    }
-                });
 
                 webViewModel.setCurrentUrl("https://seekingalpha.com/symbol/" + selectedTicker);
             }
@@ -81,6 +71,9 @@ public class TickerListFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         webViewModel = new ViewModelProvider(requireActivity()).get(WebViewModel.class);
+
+        listView = requireView().findViewById(R.id.list_id);
+
         webViewModel.getTickerList().observe(getViewLifecycleOwner(), new Observer<List<String>>() {
             @Override
             public void onChanged(List<String> list) {
