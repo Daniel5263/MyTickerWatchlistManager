@@ -4,17 +4,19 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+
 import androidx.lifecycle.ViewModelProvider;
 
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.os.Bundle;
-import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,8 +28,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        webViewModel = new ViewModelProvider(this).get(WebViewModel.class);
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
@@ -48,22 +48,44 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+
+        webViewModel = new ViewModelProvider(this).get(WebViewModel.class);
+
         if (intent.getAction() != null && intent.getAction().equals(Intent.ACTION_SEND)) {
             String smsText = intent.getExtras().getString("smsText");
 
             if (smsText != null) {
                 ticker = extractTickerFromSmsText(smsText);
+
                 if (ticker != null) {
                     webViewModel.addTicker(ticker);
+                } else {
+                    Toast.makeText(this, "Invalid ticker", Toast.LENGTH_SHORT).show();
+                    Intent newActivityIntent = new Intent(this, MainActivity.class);
+                    newActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(newActivityIntent);
                 }
             }
-
-            webViewModel.addTicker(ticker);
         }
     }
 
     private String extractTickerFromSmsText(String smsText) {
-        return ticker;
+        String pattern = "Ticker:<<([A-Z]+)>>";
+        String[] words = smsText.split("\\s+");
+        java.util.regex.Pattern regex = java.util.regex.Pattern.compile(pattern);
+        java.util.regex.Matcher matcher = regex.matcher(smsText);
+
+        if (matcher.find()) {
+            return matcher.group(1);
+        } else if (words.length > 0 && words[0].matches(pattern)) {
+            return words[0];
+        } else {
+            Toast.makeText(this, "No valid watchlist entry found", Toast.LENGTH_SHORT).show();
+            Intent newActivityIntent = new Intent(this, MainActivity.class);
+            newActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(newActivityIntent);
+            return null;
+        }
     }
 
     @Override

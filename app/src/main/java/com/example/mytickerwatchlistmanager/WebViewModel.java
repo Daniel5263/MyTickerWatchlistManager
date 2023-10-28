@@ -18,11 +18,11 @@ public class WebViewModel extends ViewModel {
     }
 
     public LiveData<List<String>> getTickerList() {
-        if (tickerListLiveData == null) {
-            tickerListLiveData = new MutableLiveData<>();
+            if (tickerListLiveData == null) {
+                tickerListLiveData = new MutableLiveData<>();
+            }
+            return tickerListLiveData;
         }
-        return tickerListLiveData;
-    }
 
     public void addTicker(String ticker) {
         List<String> currentList = tickerListLiveData.getValue();
@@ -32,7 +32,7 @@ public class WebViewModel extends ViewModel {
         currentList.add(ticker);
         tickerListLiveData.setValue(currentList);
 
-        currentUrlLiveData.setValue(ticker);
+        currentUrlLiveData.setValue("https://seekingalpha.com/symbol/" + ticker);
     }
 
     public void setCurrentUrl(String url) {
